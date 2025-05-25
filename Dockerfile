@@ -16,5 +16,5 @@ COPY . .
 # Expõe a porta em que a aplicação vai rodar
 EXPOSE 8000
 
-# Comando para rodar a aplicação com Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Comando para rodar a aplicação com Uvicorn (ajustado!)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
