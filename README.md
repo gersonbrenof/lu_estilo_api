@@ -8,7 +8,7 @@ API desenvolvida com [FastAPI](https://fastapi.tiangolo.com/)
 
 ```bash
 # 1. Clonar o repositório
-git clone [https://github.com/seu-usuario/lu_estilo_api.git]
+git clone [https://github.com/gersonbrenof/lu_estilo_api.git]
 cd lu_estilo_api
 
 # 2. Criar ambiente virtual
