@@ -25,3 +25,6 @@ pip install -r requirements.txt
 
 # 5. Rodar o servidor FastAPI
 uvicorn main:app --reload
+
+# link do projeto funcionado
+link: https://lu-estilo-api.onrender.com/docs
