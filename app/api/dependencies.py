@@ -21,16 +21,23 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     try:
         payload = jwt.decode(
             token,
-            settings.JWT_SECRET_KEY, # <--- USAR settings.JWT_SECRET_KEY
-            algorithms=[settings.JWT_ALGORITHM] # <--- USAR settings.JWT_ALGORITHM
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM]
         )
-        username: str = payload.get("sub")
-        if username is None:
+        user_email: str = payload.get("sub")
+        if user_email is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
 
-    user = db.query(User).filter(User.username == username).first()
+    user = db.query(User).filter(User.email == user_email).first()
     if user is None:
         raise credentials_exception
     return user
+def check_user_role(current_user: User, required_admin: bool = True):
+    """
+    Verifica se o usuário tem permissão de administrador.
+    Se required_admin for True, o usuário precisa ser admin para passar.
+    """
+    if required_admin and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Acesso negado: privilégios insuficientes")

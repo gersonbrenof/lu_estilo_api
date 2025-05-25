@@ -9,10 +9,11 @@ from fastapi import Request
 from app.core.security import verify_password,  create_refresh_token
 from jose import JWTError, jwt
 from app.core.config import settings
-from pydantic import BaseModel
+from app.models.client import Client
+from pydantic import BaseModel, EmailStr
 auth = APIRouter()
 class LoginRequest(BaseModel):
-    username: str
+    email: EmailStr
     password: str
 @auth.post("/register", response_model=TokenResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -47,21 +48,23 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         "refresh_token": refresh_token, #
         "token_type": "bearer"
     }
-@auth.post("/login/")
+@auth.post("/login")
 def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == request.username).first()
-    if not user or not verify_password(request.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Usuário ou senha incorretos.")
-    
-    access_token = create_access_token(data={"sub": user.username})
-    refresh_token = create_refresh_token(subject=user.username)
-    
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
-    
+    # Primeiro tenta buscar usuário admin (User)
+    user = db.query(User).filter(User.email == request.email).first()
+    if user and verify_password(request.password, user.hashed_password):
+        role = "admin" if user.is_admin else "user"
+        token = create_access_token(data={"sub": user.email, "role": role})
+        return {"access_token": token, "token_type": "bearer"}
+
+    # Se não achou usuário admin/user, tenta cliente normal
+    client = db.query(Client).filter(Client.email == request.email).first()
+    if client and verify_password(request.password, client.senha_hash):
+        token = create_access_token(data={"sub": client.email, "role": "client"})
+        return {"access_token": token, "token_type": "bearer"}
+
+    # Se não encontrou nenhum, retorna erro
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email ou senha incorretos.")
 @auth.post("/refresh-token/", response_model=TokenResponse)
 def refresh_token(request: Request):
     auth_header = request.headers.get("Authorization")
