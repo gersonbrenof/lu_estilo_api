@@ -11,6 +11,8 @@ from app.core.database import Base
 from app.models import user 
 from app.models.client import Client
 from app.models.product import Product
+from app.models.order import Pedido, ItemPedido, StatusPedido
+
 
 config = context.config
 

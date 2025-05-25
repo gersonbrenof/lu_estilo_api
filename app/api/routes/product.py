@@ -54,7 +54,7 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), curren
     check_user_role(current_user)
     return crud.create_product(db, product)
 
-@product.put("/{product_id}", response_model=ProductOut)
+@product.put("/products/{product_id}", response_model=ProductOut)
 def update_product(product_id: int, product_data: ProductUpdate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     updated = crud.update_product(db, product_id, product_data)
     check_user_role(current_user)

@@ -10,3 +10,4 @@ class Client(Base):
     cpf = Column(String, unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     user = relationship("User", back_populates="client")
+    pedidos = relationship("Pedido", back_populates="cliente")

@@ -59,7 +59,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
 
     # Se não achou usuário admin/user, tenta cliente normal
     client = db.query(Client).filter(Client.email == request.email).first()
-    if client and verify_password(request.password, client.senha_hash):
+    if client and verify_password(request.password, client.user.hashed_password):
         token = create_access_token(data={"sub": client.email, "role": "client"})
         return {"access_token": token, "token_type": "bearer"}
 

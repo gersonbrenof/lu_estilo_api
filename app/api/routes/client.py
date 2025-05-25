@@ -12,7 +12,6 @@ from sqlalchemy.exc import IntegrityError
 from app.models.user import User
 client = APIRouter()
 
-
 @client.post("/clients", response_model=ClientWithTokenResponse, status_code=status.HTTP_201_CREATED)
 def create_new_client(
     client_in: ClientCreate,
@@ -27,18 +26,22 @@ def create_new_client(
         if existing_user:
             raise HTTPException(status_code=400, detail="Usuário com este email já existe")
 
+        # Verifica se cpf já existe
+        existing_client_cpf = db.query(Client).filter(Client.cpf == client_in.cpf).first()
+        if existing_client_cpf:
+            raise HTTPException(status_code=400, detail="CPF já cadastrado")
+
         client_db = create_client(db, client_in)
 
     except IntegrityError:
-        # Captura erro do banco e lança HTTPException amigável
-        raise HTTPException(status_code=400, detail="Erro: usuário já cadastrado")
+        # Captura erro inesperado do banco e lança HTTPException amigável
+        raise HTTPException(status_code=400, detail="Erro inesperado ao cadastrar usuário")
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     token = create_access_token({"sub": client_db.email})
 
     return ClientWithTokenResponse(client=client_db, token=token)
-
 @client.get("/clients", response_model=List[ClientResponse])
 def list_clients(
     skip: int = 0,
